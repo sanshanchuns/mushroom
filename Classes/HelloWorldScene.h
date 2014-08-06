@@ -27,11 +27,12 @@ private:
     bool bPersonCrashed; //人是否已经撞过了
     
     void addMushroom();
+    void addMushroomLogic(const std::string& filename, const std::string& filenameHighlighted, float x, float y);
     void addPerson(float x, float y, const std::string& filename, int tag);
     
     Action* getShakeAction(int tag, int distance, float duration);
     void crashMushroom(Sprite* mushroom, Sprite* mushroomHighlighted, int tag);
-    void shakePerson(Sprite* person, int tag, int distance, float duration);
+    void crashMushroomLogic(Sprite* mushroom, Sprite* mushroomHighlighted, int tag);
 //    void addMushroom(Vec2 point, const std::string& filename, const std::string& filenameHighlighted);
     
 public:

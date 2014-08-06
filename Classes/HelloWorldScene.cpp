@@ -124,23 +124,41 @@ void HelloWorld::addMushroom(){
     
 }
 
+void HelloWorld::addMushroomLogic(const std::string& filename, const std::string& filenameHighlighted, float x, float y){
+    
+    auto mushroom = Sprite::create(filename);
+    mushroom->setPosition(x, y);
+    addChild(mushroom);
+    
+    auto mushroomHighlighted = Sprite::create(filenameHighlighted);
+    mushroomHighlighted->setPosition(x, y);
+    mushroomHighlighted->setVisible(false);
+    addChild(mushroomHighlighted);
+
+}
+
+void HelloWorld::crashMushroomLogic(Sprite* mushroom, Sprite* mushroomHighlighted, int tag){
+    
+    person->runAction(this->getShakeAction(tag, 40, 0.3));
+    
+    if (mushroom->isVisible()) {
+        mushroom->setVisible(false);
+        mushroomHighlighted->setVisible(true);
+        mushroomHighlighted->runAction(this->getShakeAction(tag, 100, 0.3));
+        
+    }else{
+        mushroom->setVisible(true);
+        mushroom->runAction(this->getShakeAction(tag, 100, 0.3));
+        mushroomHighlighted->setVisible(false);
+    }
+}
+
 void HelloWorld::crashMushroom(Sprite* mushroom, Sprite* mushroomHighlighted, int tag){
     
     switch (tag) {
         case kMushroomTop:
             if (!bMushroomTopCrashed) { //没有撞过
-                
-                if (mushroom->isVisible()) {
-                    mushroom->setVisible(false);
-                    mushroomHighlighted->setVisible(true);
-                    mushroomHighlighted->runAction(this->getShakeAction(tag, 100, 0.3));
-                    
-                }else{
-                    mushroom->setVisible(true);
-                    mushroom->runAction(this->getShakeAction(tag, 100, 0.3));
-                    mushroomHighlighted->setVisible(false);
-                }
-                
+                crashMushroomLogic(mushroom, mushroomHighlighted, tag);
                 bMushroomTopCrashed = true;
             }
             
@@ -149,18 +167,7 @@ void HelloWorld::crashMushroom(Sprite* mushroom, Sprite* mushroomHighlighted, in
             
         case kMushroomLeft:
             if (!bMushroomLeftCrashed) { //没有撞过
-                
-                if (mushroom->isVisible()) {
-                    mushroom->setVisible(false);
-                    mushroomHighlighted->setVisible(true);
-                    mushroomHighlighted->runAction(this->getShakeAction(tag, 100, 0.3));
-                    
-                }else{
-                    mushroom->setVisible(true);
-                    mushroom->runAction(this->getShakeAction(tag, 100, 0.3));
-                    mushroomHighlighted->setVisible(false);
-                }
-                
+                crashMushroomLogic(mushroom, mushroomHighlighted, tag);
                 bMushroomLeftCrashed = true;
             }
             
@@ -168,18 +175,7 @@ void HelloWorld::crashMushroom(Sprite* mushroom, Sprite* mushroomHighlighted, in
             
         case kMushroomRight:
             if (!bMushroomRightCrashed) { //没有撞过
-                
-                if (mushroom->isVisible()) {
-                    mushroom->setVisible(false);
-                    mushroomHighlighted->setVisible(true);
-                    mushroomHighlighted->runAction(this->getShakeAction(tag, 100, 0.3));
-                    
-                }else{
-                    mushroom->setVisible(true);
-                    mushroom->runAction(this->getShakeAction(tag, 100, 0.3));
-                    mushroomHighlighted->setVisible(false);
-                }
-                
+                crashMushroomLogic(mushroom, mushroomHighlighted, tag);
                 bMushroomRightCrashed = true;
             }
             
@@ -187,18 +183,7 @@ void HelloWorld::crashMushroom(Sprite* mushroom, Sprite* mushroomHighlighted, in
             
         case kMushroomBottom:
             if (!bMushroomBottomCrashed) { //没有撞过
-                
-                if (mushroom->isVisible()) {
-                    mushroom->setVisible(false);
-                    mushroomHighlighted->setVisible(true);
-                    mushroomHighlighted->runAction(this->getShakeAction(tag, 100, 0.3));
-                    
-                }else{
-                    mushroom->setVisible(true);
-                    mushroom->runAction(this->getShakeAction(tag, 100, 0.3));
-                    mushroomHighlighted->setVisible(false);
-                }
-                
+                crashMushroomLogic(mushroom, mushroomHighlighted, tag);
                 bMushroomBottomCrashed = true;
             }
             
@@ -278,25 +263,20 @@ void HelloWorld::addPerson(float x, float y, const std::string &filename, int ta
         
         if (x < -kSwitch) {
             log("left");
-            this->shakePerson(person, kMushroomLeft, 40, 0.3);
             this->crashMushroom(mushroomLeft, mushroomLeftHighlighted, kMushroomLeft);
             
         } else if (x > kSwitch){
             log("right");
-            this->shakePerson(person, kMushroomRight, 40, 0.3);
             this->crashMushroom(mushroomRight, mushroomRightHighlighted, kMushroomRight);
             
         } else if (y < -kSwitch){
             log("bottom");
-            this->shakePerson(person, kMushroomBottom, 40, 0.3);
             this->crashMushroom(mushroomBottom, mushroomBottomHighlighted, kMushroomBottom);
             
         } else if (y > kSwitch) {
             log("top");
-            this->shakePerson(person, kMushroomTop, 40, 0.3);
             this->crashMushroom(mushroomTop, mushroomTopHighlighted, kMushroomTop);
         } else if (x < 10 && x > -10 && y < 10 && y > -10){
-            bPersonCrashed = false; //解锁撞击, 以便下次可以撞击
             bMushroomTopCrashed = false;
             bMushroomLeftCrashed = false;
             bMushroomRightCrashed = false;
@@ -306,15 +286,6 @@ void HelloWorld::addPerson(float x, float y, const std::string &filename, int ta
     });
     
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
-    
-}
-
-void HelloWorld::shakePerson(Sprite* person, int tag, int distance, float duration){
-    
-    if (!bPersonCrashed) { //如果没有撞过
-        person->runAction(this->getShakeAction(tag, distance, duration));
-        bPersonCrashed = true; //已经撞过, 不允许再撞
-    }
     
 }
 
