@@ -248,10 +248,20 @@ Action* HelloWorld::getShakeAction(int tag, int distance, float duration){
 
 void HelloWorld::addPerson(float x, float y, const std::string &filename, int tag){
     
-    auto person = Sprite::create(filename);
+    person = Sprite::create(filename);
     person->setPosition(Vec2(x, y));
     person->setScale(0.7, 0.7);
     addChild(person);
+    
+    auto l = EventListenerTouchOneByOne::create();
+    l->onTouchBegan = [=](Touch* touch, Event* event){
+        
+        person->runAction(this->getShakeAction(kMushroomLeft, 100, 0.3));
+        return false;
+    };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(l, person);
+    
+    
     
     Device::setAccelerometerEnabled(true);
     Device::setAccelerometerInterval(0.1);
@@ -299,7 +309,7 @@ void HelloWorld::addPerson(float x, float y, const std::string &filename, int ta
     
 }
 
-void HelloWorld::shakePerson(Sprite* person, int tag, int distance, int duration){
+void HelloWorld::shakePerson(Sprite* person, int tag, int distance, float duration){
     
     if (!bPersonCrashed) { //如果没有撞过
         person->runAction(this->getShakeAction(tag, distance, duration));

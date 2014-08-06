@@ -18,6 +18,7 @@ private:
     Sprite* mushroomRightHighlighted;
     Sprite* mushroomBottom;
     Sprite* mushroomBottomHighlighted;
+    Sprite* person;
     
     bool bMushroomTopCrashed;
     bool bMushroomLeftCrashed;
@@ -30,7 +31,7 @@ private:
     
     Action* getShakeAction(int tag, int distance, float duration);
     void crashMushroom(Sprite* mushroom, Sprite* mushroomHighlighted, int tag);
-    void shakePerson(Sprite* person, int tag, int distance, int duration);
+    void shakePerson(Sprite* person, int tag, int distance, float duration);
 //    void addMushroom(Vec2 point, const std::string& filename, const std::string& filenameHighlighted);
     
 public:
