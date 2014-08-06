@@ -2,6 +2,7 @@
 #define __HELLOWORLD_SCENE_H__
 
 #include "cocos2d.h"
+#include "Mushroom.h"
 
 USING_NS_CC;
 
@@ -10,29 +11,28 @@ class HelloWorld : public cocos2d::Layer
 private:    
     Size visibleSize;
     
-    Sprite* mushroomTop;
-    Sprite* mushroomTopHighlighted;
-    Sprite* mushroomLeft;
-    Sprite* mushroomLeftHighlighted;
-    Sprite* mushroomRight;
-    Sprite* mushroomRightHighlighted;
-    Sprite* mushroomBottom;
-    Sprite* mushroomBottomHighlighted;
+    Mushroom* mushroomTop;
+    Mushroom* mushroomLeft;
+    Mushroom* mushroomRight;
+    Mushroom* mushroomBottom;
     Sprite* person;
     
-    bool bMushroomTopCrashed;
-    bool bMushroomLeftCrashed;
-    bool bMushroomRightCrashed;
-    bool bMushroomBottomCrashed;
+    //以下变量为了防止连续触发撞击事件
+//    bool bMushroomTopCrashed;
+//    bool bMushroomLeftCrashed;
+//    bool bMushroomRightCrashed;
+//    bool bMushroomBottomCrashed;
     bool bPersonCrashed; //人是否已经撞过了
     
     void addMushroom();
-    void addMushroomLogic(const std::string& filename, const std::string& filenameHighlighted, float x, float y);
-    void addPerson(float x, float y, const std::string& filename, int tag);
+    Mushroom* addMushroomLogic(const std::string& filename, int number, float x, float y);
+    void addPerson();
     
-    Action* getShakeAction(int tag, int distance, float duration);
-    void crashMushroom(Sprite* mushroom, Sprite* mushroomHighlighted, int tag);
-    void crashMushroomLogic(Sprite* mushroom, Sprite* mushroomHighlighted, int tag);
+    Action* getShakeAction(int tag, int distance, float duration, bool highlighted);
+    Action* getCrashAction(int tag, int distance, float duration);
+    
+    void crashMushroom(Mushroom* mushroom, int tag);
+    void crashMushroomLogic(Mushroom* mushroom, int tag, bool highlighted);
 //    void addMushroom(Vec2 point, const std::string& filename, const std::string& filenameHighlighted);
     
 public:
