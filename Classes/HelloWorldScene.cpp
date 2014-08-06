@@ -8,7 +8,7 @@ USING_NS_CC;
 #define kMushroomRight 3
 #define kMushroomBottom 4
 #define kPerson 5
-#define kSwitch 50
+#define kSwitch 30
 
 Scene* HelloWorld::createScene()
 {
@@ -278,24 +278,24 @@ void HelloWorld::addPerson(float x, float y, const std::string &filename, int ta
         
         if (x < -kSwitch) {
             log("left");
-            this->shakePerson(person, kMushroomLeft, 100, 0.5);
+            this->shakePerson(person, kMushroomLeft, 40, 0.3);
             this->crashMushroom(mushroomLeft, mushroomLeftHighlighted, kMushroomLeft);
             
         } else if (x > kSwitch){
             log("right");
-            this->shakePerson(person, kMushroomRight, 100, 0.5);
+            this->shakePerson(person, kMushroomRight, 40, 0.3);
             this->crashMushroom(mushroomRight, mushroomRightHighlighted, kMushroomRight);
             
         } else if (y < -kSwitch){
             log("bottom");
-            this->shakePerson(person, kMushroomBottom, 100, 0.5);
+            this->shakePerson(person, kMushroomBottom, 40, 0.3);
             this->crashMushroom(mushroomBottom, mushroomBottomHighlighted, kMushroomBottom);
             
         } else if (y > kSwitch) {
             log("top");
-            this->shakePerson(person, kMushroomTop, 100, 0.5);
+            this->shakePerson(person, kMushroomTop, 40, 0.3);
             this->crashMushroom(mushroomTop, mushroomTopHighlighted, kMushroomTop);
-        } else{
+        } else if (x < 10 && x > -10 && y < 10 && y > -10){
             bPersonCrashed = false; //解锁撞击, 以便下次可以撞击
             bMushroomTopCrashed = false;
             bMushroomLeftCrashed = false;
