@@ -1,7 +1,9 @@
 #include "HelloWorldScene.h"
 #include "VisibleRect.h"
+#include "SimpleAudioEngine.h"
 
 USING_NS_CC;
+using namespace CocosDenshion;
 
 #define kMushroomTop 1
 #define kMushroomLeft 2
@@ -15,6 +17,7 @@ USING_NS_CC;
 #define kNumberBottom 4
 
 #define kMask 5   //蘑菇外面的罩层
+#define kNumber 6
 
 #define kSwitch 30
 #define NormalColor Color3B(100, 100, 100)
@@ -30,7 +33,7 @@ Scene* HelloWorld::createScene()
     
     // 'layer' is an autorelease object
     auto layer = HelloWorld::create();
-
+    
     // add layer as a child to scene
     scene->addChild(layer);
 
@@ -59,6 +62,9 @@ bool HelloWorld::init()
 //    background->setScale(visibleSize.width/background->getContentSize().width, visibleSize.height/background->getContentSize().height);
 //    addChild(background);
     
+    //播放背景音乐
+//    SimpleAudioEngine::getInstance()->playBackgroundMusic("background.mp3");
+    
     return true;
 }
 
@@ -66,68 +72,225 @@ void HelloWorld::addMushroom(){
     
     Vec2 point = Vec2(visibleSize.width/2, visibleSize.height/2); //屏幕中心点
     
-    mushroomTop = addMushroomLogic("blue_190_highlighted.png", 1, point.x, point.y + visibleSize.width/3);
-    mushroomLeft = addMushroomLogic("yellow_190_highlighted.png", 4, point.x - visibleSize.width/3, point.y);
-    mushroomRight = addMushroomLogic("red_190_highlighted.png", 5, point.x + visibleSize.width/3, point.y);
-    mushroomBottom = addMushroomLogic("green_190_highlighted.png", 8, point.x, point.y - visibleSize.width/3);
+//    addMushroomLogic("blue_190_highlighted.png", 1, point.x, point.y + visibleSize.width/3, mushroomTop);
+//    addMushroomLogic("yellow_190_highlighted.png", 4, point.x - visibleSize.width/3, point.y, mushroomLeft);
+//    addMushroomLogic("red_190_highlighted.png", 5, point.x + visibleSize.width/3, point.y, mushroomRight);
+//    addMushroomLogic("green_190_highlighted.png", 8, point.x, point.y - visibleSize.width/3, mushroomBottom);
     
-}
-
-Mushroom* HelloWorld::addMushroomLogic(const std::string& filename, int number, float x, float y){
+    //添加top蘑菇
+    mushroomTop = Sprite::create("top_190_highlighted.png");
+    mushroomTop->setPosition(point.x, point.y + visibleSize.width/3);
+    mushroomTop->setColor(NormalColor);
+    addChild(mushroomTop);
     
-    auto mushroom = Mushroom::create(filename);
-    mushroom->setPosition(x, y);
-    mushroom->setColor(NormalColor);
-    addChild(mushroom);
-    
-    char numberPath[28];
-    sprintf(numberPath, "number/%d_120_highlighted.png", number);
-    
-    auto numberSprite = Sprite::create(numberPath);
+    auto numberSprite = Sprite::create(String::createWithFormat("number/%d_120_highlighted.png", 1)->getCString());
     numberSprite->setPosition(kMushroomWidth/2, kMushroomHeight/2);
     numberSprite->setColor(NormalColor);
-    mushroom->addChild(numberSprite);
+    mushroomTop->addChild(numberSprite, 0, kNumber);
     
     auto mask = Sprite::create("mask.png");
     mask->setPosition(kMushroomWidth/2, kMushroomHeight/2);
-    mask->setVisible(false);
-    mushroom->addChild(mask, 0, kMask);
+//    mask->setVisible(false);
+    mask->setOpacity(0);
+    mushroomTop->addChild(mask, 0, kMask);
     
-    return mushroom;
+    //添加left蘑菇
+    mushroomLeft = Sprite::create("left_190_highlighted.png");
+    mushroomLeft->setPosition(point.x - visibleSize.width/3, point.y);
+    mushroomLeft->setColor(NormalColor);
+    addChild(mushroomLeft);
+    
+    auto numberSprite1 = Sprite::create(String::createWithFormat("number/%d_120_highlighted.png", 4)->getCString());
+    numberSprite1->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+    numberSprite1->setColor(NormalColor);
+    mushroomLeft->addChild(numberSprite1, 0, kNumber);
+    
+    auto mask1 = Sprite::create("mask.png");
+    mask1->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+//    mask1->setVisible(false);
+    mask1->setOpacity(0);
+    mushroomLeft->addChild(mask1, 0, kMask);
+    
+    //添加right蘑菇
+    mushroomRight = Sprite::create("right_190_highlighted.png");
+    mushroomRight->setPosition(point.x + visibleSize.width/3, point.y);
+    mushroomRight->setColor(NormalColor);
+    addChild(mushroomRight);
+    
+    auto numberSprite2 = Sprite::create(String::createWithFormat("number/%d_120_highlighted.png", 5)->getCString());
+    numberSprite2->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+    numberSprite2->setColor(NormalColor);
+    mushroomRight->addChild(numberSprite2, 0, kNumber);
+    
+    auto mask2 = Sprite::create("mask.png");
+    mask2->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+//    mask2->setVisible(false);
+    mask2->setOpacity(0);
+    mushroomRight->addChild(mask2, 0, kMask);
+    
+    //添加bottom蘑菇
+    mushroomBottom = Sprite::create("bottom_190_highlighted.png");
+    mushroomBottom->setPosition(point.x, point.y - visibleSize.width/3);
+    mushroomBottom->setColor(NormalColor);
+    addChild(mushroomBottom);
+    
+    auto numberSprite3 = Sprite::create(String::createWithFormat("number/%d_120_highlighted.png", 8)->getCString());
+    numberSprite3->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+    numberSprite3->setColor(NormalColor);
+    mushroomBottom->addChild(numberSprite3, 0, kNumber);
+    
+    auto mask3 = Sprite::create("mask.png");
+    mask3->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+//    mask3->setVisible(false);
+    mask3->setOpacity(0);
+    mushroomBottom->addChild(mask3, 0, kMask);
+    
+    
 }
 
-void HelloWorld::crashMushroomLogic(Mushroom* mushroom, int tag, bool highlighted){
+void HelloWorld::addMushroomLogic(const std::string& filename, int number, float x, float y, Sprite* mushroom){
     
-    person->runAction(this->getCrashAction(tag, 40, 0.3));  //人的动画始终要执行, 蘑菇的动画加入延迟
-    mushroom->runAction(this->getShakeAction(tag, 100, 0.3, highlighted));
+//    mushroom = Sprite::create(filename);
+//    mushroom->setPosition(x, y);
+//    mushroom->setColor(NormalColor);
+//    addChild(mushroom);
+//    
+//    auto numberSprite = Sprite::create(String::createWithFormat("number/%d_120_highlighted.png", number)->getCString());
+//    numberSprite->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+//    numberSprite->setColor(NormalColor);
+//    mushroom->addChild(numberSprite);
+//    
+//    auto mask = Sprite::create("mask.png");
+//    mask->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+//    mask->setVisible(false);
+//    mushroom->addChild(mask, 0, kMask);
+    
+}
+
+void HelloWorld::crashMushroomLogic(Sprite* mushroom, int tag, bool highlighted){
+    
+    person->runAction(this->getCrashAction(tag, 40, 0.2));  //人的动画始终要执行, 蘑菇的动画加入延迟
+    mushroom->runAction(this->getShakeAction(tag, 100, 0.3));
     
     if (!highlighted) {
         auto mask = mushroom->getChildByTag(kMask);
-        mask->setVisible(true);
-        mushroom->highlighted = true;
+        auto number = mushroom->getChildByTag(kNumber);
+        mushroom->runAction(TintTo::create(1.0, 255, 255, 255));
+        mask->runAction(FadeIn::create(0.3));
+        number->runAction(TintTo::create(1.0, 255, 255, 255));
+        
+        switch (tag) {
+            case kMushroomTop:
+            {
+                bMushroomTopHighlighted = true;
+                auto emitter = ParticleSystemQuad::create("crash_top.plist");
+                emitter->setPosition(mushroom->getPosition().x, mushroom->getPosition().y - mushroom->getContentSize().height/2);
+                emitter->setAutoRemoveOnFinish(true);
+                addChild(emitter, 10);
+                break;
+            }
+            case kMushroomLeft:
+            {
+                bMushroomLeftHighlighted = true;
+                auto emitter = ParticleSystemQuad::create("crash_left.plist");
+                emitter->setPosition(mushroom->getPosition().x + mushroom->getContentSize().width/2, mushroom->getPosition().y);
+                emitter->setAutoRemoveOnFinish(true);
+                addChild(emitter, 10);
+                break;
+            }
+            case kMushroomRight:
+            {
+                bMushroomRightHighlighted = true;
+                auto emitter = ParticleSystemQuad::create("crash_right.plist");
+                emitter->setPosition(mushroom->getPosition().x - mushroom->getContentSize().width/2, mushroom->getPosition().y);
+                emitter->setAutoRemoveOnFinish(true);
+                addChild(emitter, 10);
+                break;
+            }
+            case kMushroomBottom:
+            {
+                bMushroomBottomHighlighted = true;
+                auto emitter = ParticleSystemQuad::create("crash_bottom.plist");
+                emitter->setPosition(mushroom->getPosition().x, mushroom->getPosition().y + mushroom->getContentSize().height/2);
+                emitter->setAutoRemoveOnFinish(true);
+                addChild(emitter, 10);
+                break;
+            }
+            default:
+                break;
+        }
+//        mushroom->highlighted = true;
         //这里要执行一段由中心点放大至整个的动画
         
     }else{
         
         auto mask = mushroom->getChildByTag(kMask);
-        mask->setVisible(false);
-        mushroom->highlighted = false;
+        auto number = mushroom->getChildByTag(kNumber);
+        mushroom->runAction(TintTo::create(1.0, 100, 100, 100));
+        mask->runAction(FadeOut::create(0.3));
+        number->runAction(TintTo::create(1.0, 100, 100, 100));
+        switch (tag) {
+            case kMushroomTop:
+                bMushroomTopHighlighted = false;
+                break;
+            case kMushroomLeft:
+                bMushroomLeftHighlighted = false;
+                break;
+            case kMushroomRight:
+                bMushroomRightHighlighted = false;
+                break;
+            case kMushroomBottom:
+                bMushroomBottomHighlighted = false;
+                break;
+            default:
+                break;
+        }
+//        mushroom->highlighted = false;
         //如果需要的话,也可以渐进动画然后消失
         
     }
     
 }
 
-void HelloWorld::crashMushroom(Mushroom* mushroom, int tag){
+void HelloWorld::crashMushroom(Sprite* mushroom, int tag){
     
-    if (!mushroom->crashed) { //没有撞过
-        crashMushroomLogic(mushroom, tag, mushroom->highlighted);
-        mushroom->crashed = true;
+    switch (tag) {
+        case kMushroomTop:
+            if (!bMushroomTopCrashed) {
+                crashMushroomLogic(mushroom, tag, bMushroomTopHighlighted);
+                bMushroomTopCrashed = true;
+            }
+            break;
+        case kMushroomLeft:
+            if (!bMushroomLeftCrashed) {
+                crashMushroomLogic(mushroom, tag, bMushroomLeftHighlighted);
+                bMushroomLeftCrashed = true;
+            }
+            break;
+        case kMushroomRight:
+            if (!bMushroomRightCrashed) {
+                crashMushroomLogic(mushroom, tag, bMushroomRightHighlighted);
+                bMushroomRightCrashed = true;
+            }
+            break;
+        case kMushroomBottom:
+            if (!bMushroomBottomCrashed) {
+                crashMushroomLogic(mushroom, tag, bMushroomBottomHighlighted);
+                bMushroomBottomCrashed = true;
+            }
+            break;
+        default:
+            break;
     }
+    
+//    if (!mushroom->crashed) { //没有撞过
+//        crashMushroomLogic(mushroom, tag, mushroom->highlighted);
+//        mushroom->crashed = true;
+//    }
 
 }
 
-Action* HelloWorld::getShakeAction(int tag, int distance, float duration, bool highlighted){
+Action* HelloWorld::getShakeAction(int tag, int distance, float duration){
     
     float distanceX = 0;
     float distanceY = 0;
@@ -154,17 +317,11 @@ Action* HelloWorld::getShakeAction(int tag, int distance, float duration, bool h
     }
     
     
-    auto delay = DelayTime::create(0.3);
+    auto delay = DelayTime::create(0.1);
     auto move = MoveBy::create(duration, Vec2(distanceX, distanceY));
     auto move_ease_in = EaseElasticIn::create(move->clone() );
     auto move_ease_in_back = move_ease_in->reverse();
-    TintTo* tint = nullptr;
-    if (highlighted) {
-        tint = TintTo::create(duration, 100, 100, 100);
-    }else{
-        tint = TintTo::create(duration, 255, 255, 255);
-    }
-    auto seq = Sequence::create(delay, move_ease_in, move_ease_in_back, tint, nullptr);
+    auto seq = Sequence::create(delay, move_ease_in, move_ease_in_back, nullptr);
     return seq;
     
 }
@@ -240,11 +397,15 @@ void HelloWorld::addPerson(){
             log("top");
             this->crashMushroom(mushroomTop, kMushroomTop);
             
-        } else if (x < 10 && x > -10 && y < 10 && y > -10){
-            mushroomTop->crashed = false;
-            mushroomLeft->crashed = false;
-            mushroomRight->crashed = false;
-            mushroomBottom->crashed = false;
+        } else if (x < 20 && x > -20 && y < 20 && y > -20){
+            bMushroomTopCrashed = false;
+            bMushroomLeftCrashed = false;
+            bMushroomRightCrashed = false;
+            bMushroomBottomCrashed = false;
+//            mushroomTop->crashed = false;
+//            mushroomLeft->crashed = false;
+//            mushroomRight->crashed = false;
+//            mushroomBottom->crashed = false;
         }
         
     });
