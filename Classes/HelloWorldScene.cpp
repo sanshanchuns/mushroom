@@ -19,6 +19,10 @@ using namespace CocosDenshion;
 #define kMask 5   //蘑菇外面的罩层
 #define kNumber 6
 
+#define kTarget 10 //目标分数 10 或 15
+
+#define kTimer 1*60*1000  //单位是毫秒
+
 #define kSwitch 30
 #define NormalColor Color3B(100, 100, 100)
 #define HightlightedColor Color3B(255, 255, 255)
@@ -63,9 +67,119 @@ bool HelloWorld::init()
 //    addChild(background);
     
     //播放背景音乐
-//    SimpleAudioEngine::getInstance()->playBackgroundMusic("background.mp3");
+//    SimpleAudioEngine::getInstance()->playBackgroundMusic("mushroom.mp3");
     
     return true;
+}
+
+Action* HelloWorld::getDelayTintToAction(int tag){
+    
+    auto delay = DelayTime::create(0.3);
+    auto tintTo = TintTo::create(0.5, 100, 100, 100);
+    auto action = getCrashAction(tag, 200, 0.5);
+    auto spawn = Spawn::create(tintTo, action, NULL);
+    auto seq = Sequence::create(delay, spawn, NULL);
+    return seq;
+    
+}
+
+Action* HelloWorld::getDelayFadeOutAction(){
+    
+    auto delay = DelayTime::create(0.3);
+    auto fadeOut = FadeOut::create(0.5);
+    auto seq = Sequence::create(delay, fadeOut, NULL);
+    return seq;
+    
+}
+
+void HelloWorld::updateNumber(float dt){
+    numberSpriteTop->setSpriteFrame(String::createWithFormat("%d_120_highlighted.png", top)->getCString());
+    numberSpriteLeft->setSpriteFrame(String::createWithFormat("%d_120_highlighted.png", left)->getCString());
+    numberSpriteRight->setSpriteFrame(String::createWithFormat("%d_120_highlighted.png", right)->getCString());
+    numberSpriteBottom->setSpriteFrame(String::createWithFormat("%d_120_highlighted.png", bottom)->getCString());
+}
+
+void HelloWorld::setMushroomNumber(){
+    
+    //这里需要一个算法生成4个数字, 其中三个之和或四个之和为10或15
+    int first = (arc4random() % 9) + 1;
+    int second = (arc4random() % 9) + 1;
+    int third = (arc4random() % 9) + 1;
+    int fourth = (arc4random() % 9) + 1;
+//    int sum = first + second + third + fourth;
+    
+    top = first;
+    left = second;
+    right = third;
+    bottom = fourth;
+//    top = 2;
+//    left = 3;
+//    right = 5;
+//    bottom = 8;
+    
+    //如何延迟执行??
+    schedule(schedule_selector(HelloWorld::updateNumber), 0, 1, 1.f);
+    
+        
+    numberSpriteTop->runAction(getDelayTintToAction(kMushroomTop));
+    numberSpriteLeft->runAction(getDelayTintToAction(kMushroomLeft));
+    numberSpriteRight->runAction(getDelayTintToAction(kMushroomRight));
+    numberSpriteBottom->runAction(getDelayTintToAction(kMushroomBottom));
+    
+    mushroomTop->runAction(getDelayTintToAction(kMushroomTop));
+    mushroomLeft->runAction(getDelayTintToAction(kMushroomLeft));
+    mushroomRight->runAction(getDelayTintToAction(kMushroomRight));
+    mushroomBottom->runAction(getDelayTintToAction(kMushroomBottom));
+    
+    maskTop->runAction(getDelayFadeOutAction());
+    maskLeft->runAction(getDelayFadeOutAction());
+    maskRight->runAction(getDelayFadeOutAction());
+    maskBottom->runAction(getDelayFadeOutAction());
+    
+    bMushroomBottomHighlighted = false;
+    bMushroomTopHighlighted = false;
+    bMushroomLeftHighlighted = false;
+    bMushroomRightHighlighted = false;
+    
+    //label归0
+    tipLabel->setString(String::createWithFormat("0")->getCString());
+    
+    //开锁, 继续允许操作
+//    bAccelerationEnabled = true;
+    schedule(schedule_selector(HelloWorld::setEnableAcceleration), 0, 1, 0.5);
+    
+}
+
+void HelloWorld::setEnableAcceleration(float dt){
+    bAccelerationEnabled = true;
+}
+
+void HelloWorld::setDisableAcceleration(float dt){
+    bAccelerationEnabled = false;
+}
+
+void HelloWorld::updateTime(float dt){
+    //这里要设置label的文本, 首先累加dt, 用总时间1分钟减去累加dt, 就是剩下的时间, 转换成 分, 秒, 毫秒
+    time += dt;
+    //1分钟 = 60 秒 =  60 * 1000 毫秒
+    float remainer = kTimer - time * 1000;
+    
+    if (remainer >= 0) {
+        float minute = 0;
+        float second = remainer/1000;
+        float ms = (int)remainer%100;
+        
+        //    char string[10] = {0};
+        //    sprintf(string, "%2.2f", time);
+        timeLabel->setString(String::createWithFormat("%02.f'%02.f''%02.f", minute, second, ms)->getCString());
+    } else{
+        
+        timeLabel->setString(String::createWithFormat("%02d'%02d''%02d", 0, 0, 0)->getCString());
+        unschedule(schedule_selector(HelloWorld::updateTime));
+        
+        
+    }
+    
 }
 
 void HelloWorld::addMushroom(){
@@ -76,75 +190,109 @@ void HelloWorld::addMushroom(){
 //    addMushroomLogic("yellow_190_highlighted.png", 4, point.x - visibleSize.width/3, point.y, mushroomLeft);
 //    addMushroomLogic("red_190_highlighted.png", 5, point.x + visibleSize.width/3, point.y, mushroomRight);
 //    addMushroomLogic("green_190_highlighted.png", 8, point.x, point.y - visibleSize.width/3, mushroomBottom);
+    frameCache = SpriteFrameCache::getInstance();
+    frameCache->addSpriteFramesWithFile("number.plist");
+    frameCache->addSpriteFramesWithFile("basic.plist");
+    
+    //添加分数label
+    //添加计时器label
+    //添加总计label
+    auto tipSprite = Sprite::createWithSpriteFrameName("tip_label.png");
+    tipSprite->setPosition(visibleSize.width - tipSprite->getContentSize().width/2, visibleSize.height - 100);
+    addChild(tipSprite);
+    tipLabel = Label::createWithSystemFont("0", "Schwarzwald Regular", 80,
+                                            Size(100,100), TextHAlignment::CENTER, TextVAlignment::CENTER);
+    tipLabel->setPosition(tipSprite->getContentSize().width/2 - 20, tipSprite->getContentSize().height/2 - 10);
+    tipLabel->setColor(Color3B(0, 0, 0));
+    tipSprite->addChild(tipLabel);
+    
+    
+    auto timeSprite = Sprite::createWithSpriteFrameName("time_label.png");
+    timeSprite->setPosition(visibleSize.width - timeSprite->getContentSize().width/2, 50);
+    addChild(timeSprite);
+    
+    timeLabel = Label::createWithSystemFont("01'00''00", "Schwarzwald Regular", 40, Size(320,30), TextHAlignment::CENTER, TextVAlignment::CENTER);
+    timeLabel->setPosition(timeSprite->getContentSize().width/2 + 20, timeSprite->getContentSize().height/2 + 5);
+    timeLabel->setColor(Color3B(0, 0, 0));
+    timeSprite->addChild(timeLabel);
+    
+//    schedule(schedule_selector(HelloWorld::updateTime));
+    
+    auto roundSprite = Sprite::createWithSpriteFrameName("round_label.png");
+    roundSprite->setPosition(visibleSize.width - roundSprite->getContentSize().width/2, 150);
+    addChild(roundSprite);
+    
+    roundLabel = Label::createWithSystemFont("0", "Schwarzwald Regular", 40, Size(30, 30), TextHAlignment::CENTER, TextVAlignment::CENTER);
+    roundLabel->setPosition(roundSprite->getContentSize().width/2, roundSprite->getContentSize().height/2);
+    roundLabel->setTextColor(Color4B(229, 56, 101, 0));
+    roundSprite->addChild(roundLabel);
     
     //添加top蘑菇
-    mushroomTop = Sprite::create("top_190_highlighted.png");
+    mushroomTop = Sprite::createWithSpriteFrameName("top_190_highlighted.png");
     mushroomTop->setPosition(point.x, point.y + visibleSize.width/3);
     mushroomTop->setColor(NormalColor);
     addChild(mushroomTop);
     
-    auto numberSprite = Sprite::create(String::createWithFormat("number/%d_120_highlighted.png", 1)->getCString());
-    numberSprite->setPosition(kMushroomWidth/2, kMushroomHeight/2);
-    numberSprite->setColor(NormalColor);
-    mushroomTop->addChild(numberSprite, 0, kNumber);
+    numberSpriteTop = Sprite::create();
+    numberSpriteTop->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+    numberSpriteTop->setColor(NormalColor);
+    mushroomTop->addChild(numberSpriteTop, 0, kNumber);
     
-    auto mask = Sprite::create("mask.png");
-    mask->setPosition(kMushroomWidth/2, kMushroomHeight/2);
-//    mask->setVisible(false);
-    mask->setOpacity(0);
-    mushroomTop->addChild(mask, 0, kMask);
+    maskTop = Sprite::createWithSpriteFrameName("mask.png");
+    maskTop->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+    maskTop->setOpacity(0);
+    mushroomTop->addChild(maskTop, 0, kMask);
     
     //添加left蘑菇
-    mushroomLeft = Sprite::create("left_190_highlighted.png");
+    mushroomLeft = Sprite::createWithSpriteFrameName("left_190_highlighted.png");
     mushroomLeft->setPosition(point.x - visibleSize.width/3, point.y);
     mushroomLeft->setColor(NormalColor);
     addChild(mushroomLeft);
     
-    auto numberSprite1 = Sprite::create(String::createWithFormat("number/%d_120_highlighted.png", 4)->getCString());
-    numberSprite1->setPosition(kMushroomWidth/2, kMushroomHeight/2);
-    numberSprite1->setColor(NormalColor);
-    mushroomLeft->addChild(numberSprite1, 0, kNumber);
+    numberSpriteLeft = Sprite::create();
+    numberSpriteLeft->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+    numberSpriteLeft->setColor(NormalColor);
+    mushroomLeft->addChild(numberSpriteLeft, 0, kNumber);
     
-    auto mask1 = Sprite::create("mask.png");
-    mask1->setPosition(kMushroomWidth/2, kMushroomHeight/2);
-//    mask1->setVisible(false);
-    mask1->setOpacity(0);
-    mushroomLeft->addChild(mask1, 0, kMask);
+    maskLeft = Sprite::createWithSpriteFrameName("mask.png");
+    maskLeft->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+    maskLeft->setOpacity(0);
+    mushroomLeft->addChild(maskLeft, 0, kMask);
     
     //添加right蘑菇
-    mushroomRight = Sprite::create("right_190_highlighted.png");
+    mushroomRight = Sprite::createWithSpriteFrameName("right_190_highlighted.png");
     mushroomRight->setPosition(point.x + visibleSize.width/3, point.y);
     mushroomRight->setColor(NormalColor);
     addChild(mushroomRight);
     
-    auto numberSprite2 = Sprite::create(String::createWithFormat("number/%d_120_highlighted.png", 5)->getCString());
-    numberSprite2->setPosition(kMushroomWidth/2, kMushroomHeight/2);
-    numberSprite2->setColor(NormalColor);
-    mushroomRight->addChild(numberSprite2, 0, kNumber);
+    numberSpriteRight = Sprite::create();
+    numberSpriteRight->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+    numberSpriteRight->setColor(NormalColor);
+    mushroomRight->addChild(numberSpriteRight, 0, kNumber);
     
-    auto mask2 = Sprite::create("mask.png");
-    mask2->setPosition(kMushroomWidth/2, kMushroomHeight/2);
-//    mask2->setVisible(false);
-    mask2->setOpacity(0);
-    mushroomRight->addChild(mask2, 0, kMask);
+    maskRight = Sprite::createWithSpriteFrameName("mask.png");
+    maskRight->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+    maskRight->setOpacity(0);
+    mushroomRight->addChild(maskRight, 0, kMask);
     
     //添加bottom蘑菇
-    mushroomBottom = Sprite::create("bottom_190_highlighted.png");
+    mushroomBottom = Sprite::createWithSpriteFrameName("bottom_190_highlighted.png");
     mushroomBottom->setPosition(point.x, point.y - visibleSize.width/3);
     mushroomBottom->setColor(NormalColor);
     addChild(mushroomBottom);
     
-    auto numberSprite3 = Sprite::create(String::createWithFormat("number/%d_120_highlighted.png", 8)->getCString());
-    numberSprite3->setPosition(kMushroomWidth/2, kMushroomHeight/2);
-    numberSprite3->setColor(NormalColor);
-    mushroomBottom->addChild(numberSprite3, 0, kNumber);
+    numberSpriteBottom = Sprite::create();
+    numberSpriteBottom->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+    numberSpriteBottom->setColor(NormalColor);
+    mushroomBottom->addChild(numberSpriteBottom, 0, kNumber);
     
-    auto mask3 = Sprite::create("mask.png");
-    mask3->setPosition(kMushroomWidth/2, kMushroomHeight/2);
-//    mask3->setVisible(false);
-    mask3->setOpacity(0);
-    mushroomBottom->addChild(mask3, 0, kMask);
+    maskBottom = Sprite::createWithSpriteFrameName("mask.png");
+    maskBottom->setPosition(kMushroomWidth/2, kMushroomHeight/2);
+    maskBottom->setOpacity(0);
+    mushroomBottom->addChild(maskBottom, 0, kMask);
     
+    
+    setMushroomNumber(); //给蘑菇设置数字
     
 }
 
@@ -175,9 +323,14 @@ void HelloWorld::crashMushroomLogic(Sprite* mushroom, int tag, bool highlighted)
     if (!highlighted) {
         auto mask = mushroom->getChildByTag(kMask);
         auto number = mushroom->getChildByTag(kNumber);
-        mushroom->runAction(TintTo::create(1.0, 255, 255, 255));
-        mask->runAction(FadeIn::create(0.3));
-        number->runAction(TintTo::create(1.0, 255, 255, 255));
+        mushroom->runAction(TintTo::create(0.5, 255, 255, 255));
+        number->runAction(TintTo::create(0.5, 255, 255, 255));
+        
+        auto scale = ScaleBy::create(0.15, 2);
+        auto scaleBack = scale->reverse();
+        auto seq = Sequence::create(scale, scaleBack, NULL);
+        auto spawn = Spawn::create(seq, FadeIn::create(0.3), NULL);
+        mask->runAction(spawn);
         
         switch (tag) {
             case kMushroomTop:
@@ -226,9 +379,9 @@ void HelloWorld::crashMushroomLogic(Sprite* mushroom, int tag, bool highlighted)
         
         auto mask = mushroom->getChildByTag(kMask);
         auto number = mushroom->getChildByTag(kNumber);
-        mushroom->runAction(TintTo::create(1.0, 100, 100, 100));
+        mushroom->runAction(TintTo::create(0.5, 100, 100, 100));
         mask->runAction(FadeOut::create(0.3));
-        number->runAction(TintTo::create(1.0, 100, 100, 100));
+        number->runAction(TintTo::create(0.5, 100, 100, 100));
         switch (tag) {
             case kMushroomTop:
                 bMushroomTopHighlighted = false;
@@ -363,10 +516,23 @@ Action* HelloWorld::getCrashAction(int tag, int distance, float duration){
 
 void HelloWorld::addPerson(){
     
-    person = Sprite::create("person.png");
+    person = Sprite::createWithSpriteFrameName("person.png");
     person->setPosition(visibleSize.width/2, visibleSize.height/2);
     person->setScale(0.7, 0.7);
     addChild(person);
+    
+    auto touchListener = EventListenerTouchOneByOne::create();
+    touchListener->onTouchBegan = [=](Touch* touch, Event* event){
+        this->setMushroomNumber();
+        person->runAction(RotateBy::create(0.2, 360));
+        return true;
+    };
+    touchListener->onTouchEnded = [=](Touch* touch, Event* event){
+        //这里可以做一些复原操作
+        person->setSpriteFrame("person.png");
+    };
+    
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, person);
 
     Device::setAccelerometerEnabled(true);
     Device::setAccelerometerInterval(0.1);
@@ -378,40 +544,107 @@ void HelloWorld::addPerson(){
         //手机正面竖直放置 (0, -100, 0)
         //手机左侧面放置 (-100, 0, 0)
         //手机右侧面放置 (100, 0, 0)
-        int x = int(acc->x * 100);
-        int y = int(acc->y * 100);
-        
-        if (x < -kSwitch) {
-            log("left");
-            this->crashMushroom(mushroomLeft, kMushroomLeft);
+        if (bAccelerationEnabled) {
+            int x = int(acc->x * 100);
+            int y = int(acc->y * 100);
             
-        } else if (x > kSwitch){
-            log("right");
-            this->crashMushroom(mushroomRight, kMushroomRight);
-            
-        } else if (y < -kSwitch){
-            log("bottom");
-            this->crashMushroom(mushroomBottom, kMushroomBottom);
-            
-        } else if (y > kSwitch) {
-            log("top");
-            this->crashMushroom(mushroomTop, kMushroomTop);
-            
-        } else if (x < 20 && x > -20 && y < 20 && y > -20){
-            bMushroomTopCrashed = false;
-            bMushroomLeftCrashed = false;
-            bMushroomRightCrashed = false;
-            bMushroomBottomCrashed = false;
-//            mushroomTop->crashed = false;
-//            mushroomLeft->crashed = false;
-//            mushroomRight->crashed = false;
-//            mushroomBottom->crashed = false;
+            if (x < -kSwitch) {
+                log("left");
+                this->crashMushroom(mushroomLeft, kMushroomLeft);
+                //这里添加一个检测是否满足获胜条件的逻辑, 但需要延迟执行
+                this->checkWin();
+                
+            } else if (x > kSwitch){
+                log("right");
+                this->crashMushroom(mushroomRight, kMushroomRight);
+                this->checkWin();
+                
+            } else if (y < -kSwitch){
+                log("bottom");
+                this->crashMushroom(mushroomBottom, kMushroomBottom);
+                this->checkWin();
+                
+            } else if (y > kSwitch) {
+                log("top");
+                this->crashMushroom(mushroomTop, kMushroomTop);
+                this->checkWin();
+                
+            } else if (x < 20 && x > -20 && y < 20 && y > -20){
+                bMushroomTopCrashed = false;
+                bMushroomLeftCrashed = false;
+                bMushroomRightCrashed = false;
+                bMushroomBottomCrashed = false;
+                //            mushroomTop->crashed = false;
+                //            mushroomLeft->crashed = false;
+                //            mushroomRight->crashed = false;
+                //            mushroomBottom->crashed = false;
+            }
         }
+        
         
     });
     
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+//    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
     
+}
+
+
+int HelloWorld::getNumberSum(){
+    int sum = 0;
+    
+    if (bMushroomTopHighlighted) {
+        sum += top;
+        tipLabel->setString(String::createWithFormat("%d", sum)->getCString());
+    }
+    
+    if (bMushroomLeftHighlighted) {
+        sum += left;
+        tipLabel->setString(String::createWithFormat("%d", sum)->getCString());
+    }
+    
+    if (bMushroomRightHighlighted) {
+        sum += right;
+        tipLabel->setString(String::createWithFormat("%d", sum)->getCString());
+    }
+    
+    if (bMushroomBottomHighlighted) {
+        sum += bottom;
+        tipLabel->setString(String::createWithFormat("%d", sum)->getCString());
+    }
+    
+    if (!bMushroomTopHighlighted && !bMushroomLeftHighlighted && !bMushroomRightHighlighted && !bMushroomBottomHighlighted) {
+        tipLabel->setString(String::createWithFormat("0")->getCString());
+    }
+    
+    return sum;
+    
+}
+
+bool HelloWorld::checkWin(){
+    if (getNumberSum() == kTarget) {
+        
+        roundNumber++; //获胜的局数加1
+        roundLabel->setString(String::createWithFormat("%d", roundNumber)->getCString());
+        bAccelerationEnabled = false; //获胜的时候加一把锁, 防止再操作
+        //这里要添加一个person胜利动画, 播放粒子效果, 进入一下局
+        auto emitter = ParticleSystemQuad::create("win.plist");
+        emitter->setPosition(visibleSize.width/2, visibleSize.height/2);
+        emitter->setAutoRemoveOnFinish(true);
+        addChild(emitter, 10);
+        
+//        int height = (arc4random() % 100) + 1;
+//        int count = (arc4random() % 3) + 1;
+//        int degree = (arc4random() % 180) + 181;
+        auto spawn = Spawn::create(EaseBackInOut::create(MoveBy::create(0.5, Vec2(0, visibleSize.height/2))), RotateBy::create(0.5, 360), NULL);
+        auto spawnBack = spawn->reverse();
+        person->runAction(Sequence::create(DelayTime::create(0.3), spawn, spawnBack, NULL));
+        
+        setMushroomNumber();
+        
+        return true;
+    }else{
+        return false;
+    }
 }
 
 

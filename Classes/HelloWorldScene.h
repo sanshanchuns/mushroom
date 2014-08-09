@@ -11,11 +11,37 @@ class HelloWorld : public cocos2d::Layer
 private:    
     Size visibleSize;
     
+    SpriteFrameCache* frameCache;
+    
     Sprite* mushroomTop;
     Sprite* mushroomLeft;
     Sprite* mushroomRight;
     Sprite* mushroomBottom;
     Sprite* person;
+    
+    Sprite* numberSpriteTop;
+    Sprite* numberSpriteLeft;
+    Sprite* numberSpriteRight;
+    Sprite* numberSpriteBottom;
+    
+    Sprite* maskTop;
+    Sprite* maskLeft;
+    Sprite* maskRight;
+    Sprite* maskBottom;
+    
+    Label* tipLabel;
+    Label* timeLabel;
+    Label* roundLabel;
+    
+    float time;
+    int roundNumber; //获胜的局数
+    
+    int top;
+    int left;
+    int right;
+    int bottom;
+    
+    bool bAccelerationEnabled;
     
     //以下bool用于标记是否撞击过
     bool bMushroomTopCrashed;
@@ -34,8 +60,23 @@ private:
     void addMushroomLogic(const std::string& filename, int number, float x, float y, Sprite* mushroom);
     void addPerson();
     
+    void setMushroomNumber();
+    void updateNumber(float dt); //这个的 float dt 一定要加
+    void setEnableAcceleration(float dt);
+    void setDisableAcceleration(float dt);
+    
+    void updateTime(float dt);
+
+    
+    int getNumberSum();
+    
+    bool checkWin();
+    
     Action* getShakeAction(int tag, int distance, float duration);
     Action* getCrashAction(int tag, int distance, float duration);
+    Action* getDelayTintToAction(int tag);
+    Action* getDelayFadeOutAction();
+    
     
     void crashMushroom(Sprite* mushroom, int tag);
     void crashMushroomLogic(Sprite* mushroom, int tag, bool highlighted);
@@ -46,7 +87,7 @@ public:
     static cocos2d::Scene* createScene();
 
     // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
-    virtual bool init();  
+    virtual bool init();
     
     // a selector callback
     void menuCloseCallback(cocos2d::Ref* pSender);
